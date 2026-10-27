@@ -96,7 +96,7 @@ Puis, dans le shell, lancez par exemple `pi` ou les commandes de votre projet. V
 docker exec pi_coding_sandbox pwd
 ```
 
-Au premier lancement de Pi, suivez les instructions pour configurer l’authentification du fournisseur de modèle souhaité. La configuration et les sessions sont conservées dans `root_home/.pi/` entre les redémarrages. Tout le contenu de `root_home/` est local et n’est pas versionné par Git. L’ancienne configuration présente dans `pi_home/` a été copiée vers `root_home/.pi/`.
+Au premier lancement de Pi, suivez les instructions pour configurer l’authentification du fournisseur de modèle souhaité. La configuration et les sessions sont conservées dans `root_home/.pi/` entre les redémarrages. Tout le contenu de `root_home/` est local et n’est pas versionné par Git.
 
 ## Arrêt et maintenance
 

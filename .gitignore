@@ -219,6 +219,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Données locales et dossier personnel du conteneur
-/pi_home/
+# Dossier personnel local du conteneur
 /root_home/

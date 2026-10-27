@@ -64,9 +64,9 @@ La publication sur toutes les interfaces ne garantit pas que le réseau ou le pa
 | `root_home/.pi/` | `/root/.pi/` | Réglages Pi, authentification, sessions et état de l’agent |
 | `root_home/.ssh/authorized_keys` | `/root/.ssh/authorized_keys` | Clés publiques autorisées pour SSH |
 
-Les modifications dans ces répertoires sont immédiatement visibles des deux côtés. `pi_home/` est l’ancien emplacement de la configuration Pi ; sa configuration a été copiée vers `root_home/.pi/`. Le montage actuel est celui de `root_home/` sur `/root`.
+Les modifications dans ces répertoires sont immédiatement visibles des deux côtés. Le montage actuel de `root_home/` sur `/root` est l’unique emplacement persistant pour le dossier personnel du conteneur.
 
-`root_home/` et `pi_home/` sont exclus de Git car ils peuvent contenir des secrets et des données locales. `.env` est également ignoré. À l’inverse, `.env.sample` est destiné à être versionné. Les autres fichiers du système, dont `/etc/shadow`, les fichiers installés par apt/npm et les clés d’hôte SSH, résident dans la couche du conteneur et ne sont pas sauvegardés par ces bind mounts.
+`root_home/` est exclu de Git car il peut contenir des secrets et des données locales. `.env` est également ignoré. À l’inverse, `.env.sample` est destiné à être versionné. Les autres fichiers du système, dont `/etc/shadow`, les fichiers installés par apt/npm et les clés d’hôte SSH, résident dans la couche du conteneur et ne sont pas sauvegardés par ces bind mounts.
 
 Une reconstruction d’image suivie d’une recréation du conteneur conserve les bind mounts, mais réinitialise les fichiers non persistés de son système. Les clés d’hôte SSH sont générées si elles manquent dans le conteneur ; elles peuvent donc changer lors d’une recréation, ce qui peut provoquer un avertissement de clé d’hôte côté client SSH.
 
