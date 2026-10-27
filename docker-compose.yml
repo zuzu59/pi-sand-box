@@ -2,17 +2,28 @@ services:
   pi-agent-sandbox:
     build: .
     container_name: pi_coding_sandbox
+    hostname: dev-container
     restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: '2.0'
           memory: 2G
+    ports:
+      # SSH et ports de développement accessibles sur toutes les interfaces IPv4
+      - "0.0.0.0:2222:22"
+      - "0.0.0.0:8080:8080"
+      - "0.0.0.0:8081:8081"
+      - "0.0.0.0:8090:8090"
+      - "0.0.0.0:8091:8091"
+      - "0.0.0.0:3000:3000"
+      - "0.0.0.0:3001:3001"
     volumes:
       # Dossier pour vos projets de code
       - ./project_code:/workspace
 
-      # Sauvegarde la configuration, l'historique et les sessions sur l'hôte
-      - ./pi_home:/root/.pi
+      # Persiste l'ensemble du dossier personnel root (dont la configuration Pi)
+      - ./root_home:/root
     environment:
       - NODE_ENV=development
+      - ROOT_PASSWORD=${ROOT_PASSWORD:?Définissez ROOT_PASSWORD dans le fichier .env}

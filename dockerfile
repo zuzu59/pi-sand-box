@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     bash \
     git \
     curl \
+    openssh-server \
     python3 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
@@ -14,5 +15,6 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
 WORKDIR /workspace
 
-# Commande par défaut pour maintenir le conteneur éveillé
-CMD ["tail", "-f", "/dev/null"]
+# Démarre le serveur SSH au premier plan pour maintenir le conteneur actif
+RUN mkdir -p /run/sshd
+CMD ["/bin/bash", "-lc", "echo \"root:${ROOT_PASSWORD:?La variable ROOT_PASSWORD est obligatoire}\" | chpasswd && ssh-keygen -A && exec /usr/sbin/sshd -D -e -o PermitRootLogin=yes -o PasswordAuthentication=yes -o PubkeyAuthentication=yes"]
