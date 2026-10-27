@@ -219,5 +219,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Dossier personnel local du conteneur
+# Données locales non versionnées
 /root_home/
+/project_code/

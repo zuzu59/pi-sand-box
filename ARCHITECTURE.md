@@ -15,7 +15,7 @@ Docker Compose construit et démarre un conteneur unique. Aucun orchestrateur ex
 
 ### Image (`dockerfile`)
 
-L’image part de `node:24-bookworm-slim` et installe `bash`, `git`, `curl`, `openssh-server`, Python 3 et pip. Pi Coding Agent est installé globalement par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
+L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, Python 3 et pip. Pi Coding Agent est installé globalement par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
 
 Au démarrage, la commande du conteneur :
 
