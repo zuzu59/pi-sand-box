@@ -1,0 +1,18 @@
+services:
+  pi-agent-sandbox:
+    build: .
+    container_name: pi_coding_sandbox
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+    volumes:
+      # Dossier pour vos projets de code
+      - ./project_code:/workspace
+
+      # Sauvegarde la configuration, l'historique et les sessions sur l'hôte
+      - ./pi_home:/root/.pi
+    environment:
+      - NODE_ENV=development
