@@ -1,14 +1,17 @@
+#zf261101.1236
+
+
 services:
   pi-agent-sandbox:
     build: .
     container_name: pi_coding_sandbox
     hostname: dev-container
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '2.0'
+#          memory: 2G
     ports:
       # SSH et ports de développement accessibles sur toutes les interfaces IPv4
       - "0.0.0.0:2222:22"
