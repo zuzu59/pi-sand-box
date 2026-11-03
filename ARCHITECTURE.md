@@ -15,21 +15,26 @@ Docker Compose construit et démarre un conteneur unique. Aucun orchestrateur ex
 
 ### Image (`dockerfile`)
 
-L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, Python 3 et pip. Pi Coding Agent est installé globalement par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
+L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, `screen`, `locales`, Python 3 et pip. La locale `fr_CH.UTF-8` est générée et configurée via `LANG` et `LC_ALL`. Pi Coding Agent est installé globalement dans l’image par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
 
-Au démarrage, la commande du conteneur :
+Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister sont installés au démarrage, après le montage :
 
-1. exige la variable `ROOT_PASSWORD` et définit le mot de passe du compte `root` avec `chpasswd` ;
-2. crée les clés d’hôte SSH manquantes avec `ssh-keygen -A` ;
-3. démarre `sshd` au premier plan, ce qui maintient le conteneur actif.
+1. ajoute `/root/.local/bin` au `PATH` des sessions SSH via `/root/.profile` ;
+2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local` ;
+3. installe Chromium et ses dépendances système au premier démarrage où le cache du navigateur est absent. Le navigateur Playwright est stocké dans `/root/.cache/ms-playwright` ;
+4. installe l’extension Pi `pi-hermes-memory` ;
+5. exige `ROOT_PASSWORD` et définit le mot de passe du compte `root` avec `chpasswd` ;
+6. crée les clés d’hôte SSH manquantes avec `ssh-keygen -A`, puis démarre `sshd` au premier plan.
+
+Les commandes npm et l’installation de l’extension Pi sont relancées à chaque démarrage. Chromium est conservé dans le volume root après son premier téléchargement. Le serveur SSH n’est donc disponible qu’après la fin de l’installation initiale.
 
 Le serveur autorise l’accès SSH de `root` par mot de passe et par clé publique. Les clés publiques autorisées sont celles présentes dans `/root/.ssh/authorized_keys`. Aucune commande de démarrage ne configure un utilisateur non privilégié.
 
 ### Service Docker Compose (`docker-compose.yml`)
 
-Le service Compose s’appelle `pi-agent-sandbox`. Son conteneur porte le nom `pi_coding_sandbox` et le nom d’hôte `dev-container` ; ce dernier est celui que le shell SSH utilise dans son prompt. La politique de redémarrage est `unless-stopped`. Les limites déclarées sont de 2 CPU et 2 Go de mémoire.
+Le service Compose s’appelle `pi-agent-sandbox`. Son conteneur porte le nom `pi_coding_sandbox` et le nom d’hôte `dev-container` ; ce dernier est celui que le shell SSH utilise dans son prompt. La politique de redémarrage est `unless-stopped`.
 
-Compose transmet `NODE_ENV=development` ainsi que `ROOT_PASSWORD`, lu dans l’environnement ou dans le fichier `.env`. La substitution est obligatoire : Compose refuse de construire la configuration si `ROOT_PASSWORD` n’est pas défini.
+Compose transmet `NODE_ENV=development` ainsi que `ROOT_PASSWORD`, lu dans l’environnement ou dans le fichier `.env`. La substitution est obligatoire : Compose refuse de construire la configuration si `ROOT_PASSWORD` n’est pas défini. Aucune limite CPU ou mémoire n’est actuellement active dans `docker-compose.yml` ; les paramètres montrés en commentaire ne s’appliquent pas.
 
 ### Configuration du secret (`.env.sample` et `.env`)
 
@@ -66,17 +71,18 @@ La publication sur toutes les interfaces ne garantit pas que le réseau ou le pa
 
 Les modifications dans ces répertoires sont immédiatement visibles des deux côtés. Le montage actuel de `root_home/` sur `/root` est l’unique emplacement persistant pour le dossier personnel du conteneur.
 
-`root_home/` est exclu de Git car il peut contenir des secrets et des données locales. `.env` est également ignoré. À l’inverse, `.env.sample` est destiné à être versionné. Les autres fichiers du système, dont `/etc/shadow`, les fichiers installés par apt/npm et les clés d’hôte SSH, résident dans la couche du conteneur et ne sont pas sauvegardés par ces bind mounts.
+`root_home/` est exclu de Git car il peut contenir des secrets et des données locales. `.env` est également ignoré. À l’inverse, `.env.sample` est destiné à être versionné. Les fichiers personnels et les outils installés sous `/root` — notamment `/root/.local` et le cache Chromium `/root/.cache/ms-playwright` — sont persistés par le bind mount. Les dépendances système installées par apt, `/etc/shadow` et les clés d’hôte SSH résident dans la couche du conteneur et ne sont pas sauvegardés par ces bind mounts.
 
 Une reconstruction d’image suivie d’une recréation du conteneur conserve les bind mounts, mais réinitialise les fichiers non persistés de son système. Les clés d’hôte SSH sont générées si elles manquent dans le conteneur ; elles peuvent donc changer lors d’une recréation, ce qui peut provoquer un avertissement de clé d’hôte côté client SSH.
 
 ## Cycle de vie
 
 1. `docker compose up -d --build` construit l’image si nécessaire puis crée/démarre le conteneur.
-2. Docker applique le hostname, les limites, les ports et les montages définis par Compose.
-3. La commande de démarrage définit le mot de passe de `root`, génère au besoin les clés d’hôte et lance `sshd`.
-4. Le client se connecte en SSH au port hôte `2222`, ou lance Pi/un shell avec `docker exec`.
-5. Les fichiers de `/workspace` et de `/root` sont conservés dans leurs dossiers locaux respectifs, même après `docker compose down` puis une nouvelle création du conteneur.
+2. Docker applique le hostname, les ports et les montages définis par Compose.
+3. La commande de démarrage installe ou met à jour les outils npm et l’extension Pi dans `/root`, installe Chromium si nécessaire, puis configure le mot de passe et démarre `sshd`.
+4. Lors du premier démarrage, attendre la fin de ces installations avant la connexion SSH ; les journaux sont consultables avec `docker logs -f pi_coding_sandbox`.
+5. Le client se connecte en SSH au port hôte `2222`, ou lance Pi/un shell avec `docker exec`.
+6. Les fichiers de `/workspace` et de `/root` sont conservés dans leurs dossiers locaux respectifs, même après `docker compose down` puis une nouvelle création du conteneur.
 
 Commandes courantes :
 
@@ -101,4 +107,4 @@ docker compose down
 - L’accès SSH par mot de passe est activé en plus des clés ; choisissez un mot de passe unique et robuste. `.env` et les dossiers personnels ne doivent pas être publiés.
 - Les ports SSH et de développement sont exposés sur `0.0.0.0`. Restreignez-les par pare-feu si le conteneur ne doit pas être accessible sur tous les réseaux.
 - Les données persistantes sont des dossiers de l’hôte. Leur propriétaire et leurs permissions peuvent affecter l’accès depuis le conteneur.
-- La configuration est installée dans l’image ; après modification du `dockerfile`, reconstruisez avec `docker compose up -d --build`.
+- Les outils système et Pi Coding Agent sont installés dans l’image ; les outils npm et l’extension Pi sont installés au démarrage dans le volume `/root`. Après modification du `dockerfile`, reconstruisez avec `docker compose up -d --build` et attendez la fin de l’initialisation avant SSH.

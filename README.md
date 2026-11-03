@@ -34,7 +34,7 @@ Vérifiez qu’il fonctionne :
 docker compose ps
 ```
 
-Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Il est limité à 2 processeurs et 2 Go de mémoire. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, ainsi que les autres configurations et fichiers personnels.
+Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Aucune limite CPU ou mémoire n’est actuellement activée dans `docker-compose.yml`. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, `billion-context`, Playwright et le cache Chromium, ainsi que les autres configurations et fichiers personnels. Au démarrage, le conteneur installe aussi l’extension Pi `pi-hermes-memory`.
 
 ## Accès au conteneur en SSH
 
@@ -63,10 +63,17 @@ chmod 700 root_home/.ssh
 chmod 600 root_home/.ssh/authorized_keys
 ```
 
-Démarrez ou reconstruisez le conteneur, puis connectez-vous depuis la machine hôte :
+Démarrez ou reconstruisez le conteneur :
 
 ```bash
 docker compose up -d --build
+```
+
+Lors du premier démarrage, le conteneur installe les outils Pi et Chromium/Playwright dans le volume persistant. Attendez quelques minutes que cette installation soit terminée avant de tenter la connexion SSH ; le serveur SSH ne démarre qu’ensuite. Si la connexion est refusée, patientez encore et consultez les journaux avec `docker logs -f pi_coding_sandbox`.
+
+Connectez-vous ensuite depuis la machine hôte :
+
+```bash
 ssh -p 2222 root@ADRESSE_IP_DE_L_HOTE
 ```
 
