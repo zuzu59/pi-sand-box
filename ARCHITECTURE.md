@@ -21,7 +21,7 @@ Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister so
 
 1. ajoute `/root/.local/bin` au `PATH` des sessions SSH via `/root/.profile` ;
 2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local` ;
-3. installe Chromium et ses dépendances système au premier démarrage où le cache du navigateur est absent. Le navigateur Playwright est stocké dans `/root/.cache/ms-playwright` ;
+3. exécute `playwright install --with-deps chromium` pour installer Chromium et toutes les dépendances système nécessaires selon la procédure officielle de Playwright. Le navigateur est stocké dans `/root/.cache/ms-playwright` ;
 4. installe l’extension Pi `pi-hermes-memory` ;
 5. exige `ROOT_PASSWORD` et définit le mot de passe du compte `root` avec `chpasswd` ;
 6. crée les clés d’hôte SSH manquantes avec `ssh-keygen -A`, puis démarre `sshd` au premier plan.

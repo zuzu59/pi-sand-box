@@ -28,6 +28,14 @@ Depuis la racine du projet, construisez l’image et démarrez le conteneur :
 docker compose up -d --build
 ```
 
+Pour suivre en direct la progression de l’installation et le démarrage des services :
+
+```bash
+docker compose logs -f
+```
+
+Vous pouvez ainsi voir ce qui se passe au lieu d’attendre dans le noir (ou toute la nuit). `Ctrl+C` arrête l’affichage des journaux, pas le conteneur.
+
 Vérifiez qu’il fonctionne :
 
 ```bash
