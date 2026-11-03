@@ -19,7 +19,7 @@ L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `ht
 
 Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister sont installés au démarrage, après le montage :
 
-1. ajoute `/root/.local/bin` au `PATH` des sessions SSH via `/root/.profile` ;
+1. configure `PATH`, `LANG` et `LC_ALL` dans `/root/.profile` pour que les sessions SSH utilisent les exécutables et la locale `fr_CH.UTF-8`, indépendamment de la locale annoncée par le client ;
 2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local` ;
 3. exécute `playwright install --with-deps chromium` pour installer Chromium et toutes les dépendances système nécessaires selon la procédure officielle de Playwright. Le navigateur est stocké dans `/root/.cache/ms-playwright` ;
 4. installe l’extension Pi `pi-hermes-memory` ;
