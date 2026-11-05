@@ -20,13 +20,13 @@ L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `ht
 Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister sont installés au démarrage, après le montage :
 
 1. configure `PATH`, `LANG` et `LC_ALL` dans `/root/.profile` pour que les sessions SSH utilisent les exécutables et la locale `fr_CH.UTF-8`, indépendamment de la locale annoncée par le client ;
-2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local` ;
+2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local`, puis configure le plugin Pi de billion-context avec `bili plugin install pi` ;
 3. exécute `playwright install --with-deps chromium` pour installer Chromium et toutes les dépendances système nécessaires selon la procédure officielle de Playwright. Le navigateur est stocké dans `/root/.cache/ms-playwright` ;
 4. installe l’extension Pi `pi-hermes-memory` ;
 5. exige `ROOT_PASSWORD` et définit le mot de passe du compte `root` avec `chpasswd` ;
 6. crée les clés d’hôte SSH manquantes avec `ssh-keygen -A`, puis démarre `sshd` au premier plan.
 
-Les commandes npm, l’installation de l’extension Pi et `playwright install --with-deps chromium` sont exécutés à chaque démarrage. Le navigateur Chromium est conservé dans le volume root après son premier téléchargement. Le serveur SSH n’est donc disponible qu’après la fin de cette initialisation.
+Les commandes npm et d’installation des plugins, ainsi que `playwright install --with-deps chromium`, sont exécutés à chaque démarrage. Le navigateur Chromium est conservé dans le volume root après son premier téléchargement. Le serveur SSH n’est donc disponible qu’après la fin de cette initialisation.
 
 Le serveur autorise l’accès SSH de `root` par mot de passe et par clé publique. Les clés publiques autorisées sont celles présentes dans `/root/.ssh/authorized_keys`. Aucune commande de démarrage ne configure un utilisateur non privilégié.
 

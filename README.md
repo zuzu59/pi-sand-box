@@ -52,7 +52,7 @@ Vérifiez qu’il fonctionne :
 docker compose ps
 ```
 
-Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Aucune limite CPU ou mémoire n’est actuellement activée dans `docker-compose.yml`. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, `billion-context`, Playwright et le cache Chromium, ainsi que les autres configurations et fichiers personnels. Au démarrage, le conteneur installe aussi l’extension Pi `pi-hermes-memory`.
+Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Aucune limite CPU ou mémoire n’est actuellement activée dans `docker-compose.yml`. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, `billion-context`, Playwright et le cache Chromium, ainsi que les autres configurations et fichiers personnels. Au démarrage, le conteneur installe aussi l’extension Pi `pi-hermes-memory` et le plugin Pi de `billion-context`.
 
 ## Accès au conteneur en SSH
 
@@ -79,10 +79,10 @@ SSH demandera le mot de passe défini dans `.env` (ou utilisera votre clé si el
 
 ### Accéder à l’interface web de billion-context par tunnel SSH
 
-Pour accéder à l’interface de `billion-context` sur le port `18788` du conteneur sans publier ce port sur le réseau, créez un tunnel SSH depuis votre machine :
+Pour accéder à l’interface de `billion-context` sur le port `18787` du conteneur sans publier ce port sur le réseau, créez un tunnel SSH depuis votre machine :
 
 ```bash
-ssh -L 8080:localhost:18788 root@localhost -p 2222
+ssh -L 8080:localhost:18787 root@localhost -p 2222
 ```
 
 Gardez cette connexion SSH ouverte, puis ouvrez <http://localhost:8080> dans votre navigateur. Si le conteneur tourne sur une autre machine, remplacez `localhost` après `root@` par l’adresse IP ou le nom d’hôte de cette machine.
