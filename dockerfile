@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     openssh-server \
     locales \
     screen \
+    sudo \
+    iproute2 \
+    w3m \
     python3 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*

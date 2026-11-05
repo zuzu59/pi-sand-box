@@ -15,7 +15,7 @@ Docker Compose construit et démarre un conteneur unique. Aucun orchestrateur ex
 
 ### Image (`dockerfile`)
 
-L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, `screen`, `locales`, Python 3 et pip. La locale `fr_CH.UTF-8` est générée et configurée via `LANG` et `LC_ALL`. Pi Coding Agent est installé globalement dans l’image par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
+L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, `screen`, `sudo`, `iproute2`, `w3m`, `locales`, Python 3 et pip. La locale `fr_CH.UTF-8` est générée et configurée via `LANG` et `LC_ALL`. Pi Coding Agent est installé globalement dans l’image par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
 
 Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister sont installés au démarrage, après le montage :
 
@@ -26,7 +26,7 @@ Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister so
 5. exige `ROOT_PASSWORD` et définit le mot de passe du compte `root` avec `chpasswd` ;
 6. crée les clés d’hôte SSH manquantes avec `ssh-keygen -A`, puis démarre `sshd` au premier plan.
 
-Les commandes npm et l’installation de l’extension Pi sont relancées à chaque démarrage. Chromium est conservé dans le volume root après son premier téléchargement. Le serveur SSH n’est donc disponible qu’après la fin de l’installation initiale.
+Les commandes npm, l’installation de l’extension Pi et `playwright install --with-deps chromium` sont exécutés à chaque démarrage. Le navigateur Chromium est conservé dans le volume root après son premier téléchargement. Le serveur SSH n’est donc disponible qu’après la fin de cette initialisation.
 
 Le serveur autorise l’accès SSH de `root` par mot de passe et par clé publique. Les clés publiques autorisées sont celles présentes dans `/root/.ssh/authorized_keys`. Aucune commande de démarrage ne configure un utilisateur non privilégié.
 
@@ -53,6 +53,7 @@ Tous les ports publiés sont liés explicitement à `0.0.0.0`, donc exposés sur
 | `8081` | `8081` | Applications de développement |
 | `8090` | `8090` | Applications de développement |
 | `8091` | `8091` | Applications de développement |
+| `18787` | `18787` | Applications de développement |
 | `3000` | `3000` | Applications de développement |
 | `3001` | `3001` | Applications de développement |
 
@@ -79,16 +80,16 @@ Une reconstruction d’image suivie d’une recréation du conteneur conserve le
 
 1. `docker compose up -d --build` construit l’image si nécessaire puis crée/démarre le conteneur.
 2. Docker applique le hostname, les ports et les montages définis par Compose.
-3. La commande de démarrage installe ou met à jour les outils npm et l’extension Pi dans `/root`, installe Chromium si nécessaire, puis configure le mot de passe et démarre `sshd`.
-4. Lors du premier démarrage, attendre la fin de ces installations avant la connexion SSH ; les journaux sont consultables avec `docker logs -f pi_coding_sandbox`.
+3. La commande de démarrage installe ou met à jour les outils npm et l’extension Pi dans `/root`, puis exécute `playwright install --with-deps chromium` avant de configurer le mot de passe et de démarrer `sshd`.
+4. Attendre la fin de l’initialisation avant la connexion SSH ; les journaux sont consultables avec `docker compose logs -f` ou via `./start.sh`.
 5. Le client se connecte en SSH au port hôte `2222`, ou lance Pi/un shell avec `docker exec`.
 6. Les fichiers de `/workspace` et de `/root` sont conservés dans leurs dossiers locaux respectifs, même après `docker compose down` puis une nouvelle création du conteneur.
 
 Commandes courantes :
 
 ```bash
-# Construire et démarrer
-docker compose up -d --build
+# Construire, démarrer et suivre les journaux
+./start.sh
 
 # Consulter l’état
 docker compose ps
@@ -98,7 +99,7 @@ docker exec -it pi_coding_sandbox pi
 docker exec -it pi_coding_sandbox bash
 
 # Arrêter et supprimer le conteneur (les bind mounts locaux restent)
-docker compose down
+./stop.sh
 ```
 
 ## Limites et précautions

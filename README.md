@@ -22,17 +22,27 @@ docker compose version
 
 ## Installation
 
-Depuis la racine du projet, construisez l’image et démarrez le conteneur :
+Avant de démarrer le conteneur, créez `.env` à partir du modèle et définissez le mot de passe de `root` :
 
 ```bash
-docker compose up -d --build
+cp .env.sample .env
 ```
 
-Pour suivre en direct la progression de l’installation et le démarrage des services :
+Modifiez ensuite `.env` pour remplacer le mot de passe fictif. Vous pouvez aussi générer un mot de passe aléatoire directement :
 
 ```bash
-docker compose logs -f
+printf 'ROOT_PASSWORD=%s\n' "$(openssl rand -hex 24)" > .env
 ```
+
+Ne partagez pas le fichier `.env` et ne conservez pas la valeur fictive du modèle. Ce fichier est ignoré par Git.
+
+Depuis la racine du projet, construisez l’image et démarrez le conteneur avec le script fourni :
+
+```bash
+./start.sh
+```
+
+Le script lance `docker compose up -d --build`, puis affiche les journaux en continu pour suivre la progression de l’installation et le démarrage des services.
 
 Vous pouvez ainsi voir ce qui se passe au lieu d’attendre dans le noir (ou toute la nuit). `Ctrl+C` arrête l’affichage des journaux, pas le conteneur.
 
@@ -46,21 +56,7 @@ Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le 
 
 ## Accès au conteneur en SSH
 
-Le conteneur démarre OpenSSH sur le port `2222`, publié sur `0.0.0.0` (toutes les interfaces IPv4 de l’hôte). Les ports de développement `8080`, `8081`, `8090`, `8091`, `3000` et `3001` sont également publiés sur toutes les interfaces, chacun vers le même port du conteneur. L’accès au compte `root` est possible par mot de passe ou par clé SSH. Le mot de passe est fourni via le fichier local `.env` (ignoré par Git) :
-
-Un modèle est fourni dans `.env.sample`. Copiez-le dans `.env` et remplacez la valeur d’exemple :
-
-```bash
-cp .env.sample .env
-```
-
-Vous pouvez aussi générer un mot de passe aléatoire directement dans `.env` :
-
-```bash
-printf 'ROOT_PASSWORD=%s\n' "$(openssl rand -hex 24)" > .env
-```
-
-Ne partagez pas le fichier `.env` et ne conservez pas la valeur fictive du modèle.
+Le conteneur démarre OpenSSH sur le port `2222`, publié sur `0.0.0.0` (toutes les interfaces IPv4 de l’hôte). Les ports de développement `8080`, `8081`, `8090`, `8091`, `18787`, `3000` et `3001` sont également publiés sur toutes les interfaces, chacun vers le même port du conteneur. L’accès au compte `root` est possible par mot de passe ou par clé SSH. Le mot de passe est celui défini dans `.env` lors de l’installation.
 
 Pour l’authentification par clé (facultative), ajoutez votre clé publique à `root_home/.ssh/authorized_keys` (créez le dossier si nécessaire) :
 
@@ -71,13 +67,7 @@ chmod 700 root_home/.ssh
 chmod 600 root_home/.ssh/authorized_keys
 ```
 
-Démarrez ou reconstruisez le conteneur :
-
-```bash
-docker compose up -d --build
-```
-
-Lors du premier démarrage, le conteneur installe les outils Pi et Chromium/Playwright dans le volume persistant. Attendez quelques minutes que cette installation soit terminée avant de tenter la connexion SSH ; le serveur SSH ne démarre qu’ensuite. Si la connexion est refusée, patientez encore et consultez les journaux avec `docker logs -f pi_coding_sandbox`.
+Lors du premier démarrage, le conteneur installe les outils Pi et Chromium/Playwright dans le volume persistant. Attendez que cette installation soit terminée avant de tenter la connexion SSH ; le serveur SSH ne démarre qu’ensuite. Les journaux affichés par `./start.sh` permettent de suivre cette installation.
 
 Connectez-vous ensuite depuis la machine hôte :
 
@@ -86,6 +76,16 @@ ssh -p 2222 root@ADRESSE_IP_DE_L_HOTE
 ```
 
 SSH demandera le mot de passe défini dans `.env` (ou utilisera votre clé si elle est autorisée).
+
+### Accéder à l’interface web de billion-context par tunnel SSH
+
+Pour accéder à l’interface de `billion-context` sur le port `18788` du conteneur sans publier ce port sur le réseau, créez un tunnel SSH depuis votre machine :
+
+```bash
+ssh -L 8080:localhost:18788 root@localhost -p 2222
+```
+
+Gardez cette connexion SSH ouverte, puis ouvrez <http://localhost:8080> dans votre navigateur. Si le conteneur tourne sur une autre machine, remplacez `localhost` après `root@` par l’adresse IP ou le nom d’hôte de cette machine.
 
 Le bind sur `0.0.0.0` rend ces ports accessibles depuis les interfaces réseau de l’hôte. Protégez l’accès avec un mot de passe fort, privilégiez les clés SSH et configurez le pare-feu pour limiter les connexions aux réseaux de confiance. Les applications de développement doivent écouter sur `0.0.0.0` à l’intérieur du conteneur pour être accessibles via les ports publiés.
 
@@ -115,28 +115,24 @@ Au premier lancement de Pi, suivez les instructions pour configurer l’authenti
 
 ## Arrêt et maintenance
 
-Arrêter le conteneur sans supprimer les données :
+Arrêter et supprimer le conteneur (les données persistantes restent conservées) :
 
 ```bash
-docker compose down
+./stop.sh
 ```
 
-Le redémarrer :
+Pour le reconstruire et le redémarrer, par exemple après une modification du `dockerfile` ou de `docker-compose.yml`, utilisez :
 
 ```bash
-docker compose up -d
-```
-
-Reconstruire l’image après une modification du `dockerfile` :
-
-```bash
-docker compose up -d --build
+./start.sh
 ```
 
 ## Fichiers du projet
 
 - `ARCHITECTURE.md` : description technique détaillée du conteneur, des ports, de la persistance et du cycle de vie.
 - `dockerfile` : image basée sur Node.js 24, avec les outils système nécessaires et Pi Coding Agent installé globalement.
-- `docker-compose.yml` : définition du service, des ressources et des volumes persistants.
+- `docker-compose.yml` : définition du service, des ports et des volumes persistants.
+- `start.sh` : construit et démarre le conteneur, puis suit ses journaux.
+- `stop.sh` : arrête et supprime le conteneur sans supprimer les données des bind mounts.
 - `project_code/` : espace de travail partagé avec le conteneur (`/workspace`).
 - `root_home/` : dossier personnel local monté dans `/root`, contenant notamment la configuration, l’authentification et les sessions Pi dans `root_home/.pi/`. Il est exclu du dépôt.
