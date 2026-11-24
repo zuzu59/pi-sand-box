@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     htop \
     nano \
     curl \
+    wget \
     openssh-server \
     locales \
     screen \
@@ -35,6 +36,5 @@ ENV PLAYWRIGHT_BROWSERS_PATH="/root/.cache/ms-playwright"
 
 WORKDIR /workspace
 
-# Démarre le serveur SSH au premier plan pour maintenir le conteneur actif
 RUN mkdir -p /run/sshd
-CMD ["/bin/bash", "-lc", "grep -qxF 'export PATH=\"/root/.local/bin:$PATH\"' /root/.profile 2>/dev/null || printf '%s\\n' 'export PATH=\"/root/.local/bin:$PATH\"' >> /root/.profile; grep -qxF 'export LANG=fr_CH.UTF-8 LC_ALL=fr_CH.UTF-8' /root/.profile 2>/dev/null || printf '%s\\n' 'export LANG=fr_CH.UTF-8 LC_ALL=fr_CH.UTF-8' >> /root/.profile; npm install -g billion-context playwright --prefix=/root/.local && bili plugin install pi && playwright install --with-deps chromium && pi install npm:pi-hermes-memory && echo \"root:${ROOT_PASSWORD:?La variable ROOT_PASSWORD est obligatoire}\" | chpasswd && ssh-keygen -A && exec /usr/sbin/sshd -D -e -o PermitRootLogin=yes -o PasswordAuthentication=yes -o PubkeyAuthentication=yes"]
+CMD ["/bin/bash", "-lc", "grep -qxF 'export PATH=\"/root/.local/bin:$PATH\"' /root/.profile 2>/dev/null || printf '%s\\n' 'export PATH=\"/root/.local/bin:$PATH\"' >> /root/.profile; grep -qxF 'export LANG=fr_CH.UTF-8 LC_ALL=fr_CH.UTF-8' /root/.profile 2>/dev/null || printf '%s\\n' 'export LANG=fr_CH.UTF-8 LC_ALL=fr_CH.UTF-8' >> /root/.profile; node -e 'const fs=require(\"fs\"); const p=\"/root/.pi/agent/settings.json\"; fs.mkdirSync(require(\"path\").dirname(p),{recursive:true}); const s=fs.existsSync(p)?JSON.parse(fs.readFileSync(p,\"utf8\")):{ }; s.tuiMode=\"regular\"; fs.writeFileSync(p,JSON.stringify(s,null,2)+\"\\n\");' && npm install -g billion-context playwright --prefix=/root/.local && bili plugin install pi && playwright install --with-deps chromium && pi install npm:pi-hermes-memory && echo \"root:${ROOT_PASSWORD:?La variable ROOT_PASSWORD est obligatoire}\" | chpasswd && ssh-keygen -A && exec /usr/sbin/sshd -D -e -o PermitRootLogin=yes -o PasswordAuthentication=yes -o PubkeyAuthentication=yes"]

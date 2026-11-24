@@ -52,7 +52,7 @@ Vérifiez qu’il fonctionne :
 docker compose ps
 ```
 
-Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Aucune limite CPU ou mémoire n’est actuellement activée dans `docker-compose.yml`. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, `billion-context`, Playwright et le cache Chromium, ainsi que les autres configurations et fichiers personnels. Au démarrage, le conteneur installe aussi l’extension Pi `pi-hermes-memory` et le plugin Pi de `billion-context`.
+Le service démarre un conteneur persistant nommé `pi_coding_sandbox`, avec le nom d’hôte `dev-container` (affiché dans le prompt SSH). Aucune limite CPU ou mémoire n’est actuellement activée dans `docker-compose.yml`. Le dossier `project_code/` est monté dans `/workspace` et `root_home/` dans `/root` : le dossier personnel complet de l’utilisateur `root` est ainsi conservé sur l’hôte, y compris Pi dans `/root/.pi`, `billion-context`, Playwright et le cache Chromium, ainsi que les autres configurations et fichiers personnels. Au démarrage, le conteneur installe aussi l’extension Pi `pi-hermes-memory` et le plugin Pi de `billion-context`. Pi est configuré pour démarrer en mode TUI `regular` via `/root/.pi/agent/settings.json` (`tuiMode`), tout en préservant les autres paramètres existants.
 
 ## Accès au conteneur en SSH
 

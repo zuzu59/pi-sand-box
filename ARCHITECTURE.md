@@ -15,11 +15,11 @@ Docker Compose construit et démarre un conteneur unique. Aucun orchestrateur ex
 
 ### Image (`dockerfile`)
 
-L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `openssh-server`, `screen`, `sudo`, `iproute2`, `w3m`, `locales`, Python 3 et pip. La locale `fr_CH.UTF-8` est générée et configurée via `LANG` et `LC_ALL`. Pi Coding Agent est installé globalement dans l’image par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
+L’image part de `node:24-bookworm-slim` et installe `bash`, `btop`, `git`, `htop`, `nano`, `curl`, `wget`, `openssh-server`, `screen`, `sudo`, `iproute2`, `w3m`, `locales`, Python 3 et pip. La locale `fr_CH.UTF-8` est générée et configurée via `LANG` et `LC_ALL`. Pi Coding Agent est installé globalement dans l’image par npm avec les scripts d’installation ignorés. Le répertoire de travail par défaut est `/workspace`.
 
 Comme `/root` est monté depuis l’hôte, les outils qui doivent y persister sont installés au démarrage, après le montage :
 
-1. configure `PATH`, `LANG` et `LC_ALL` dans `/root/.profile` pour que les sessions SSH utilisent les exécutables et la locale `fr_CH.UTF-8`, indépendamment de la locale annoncée par le client ;
+1. configure `PATH`, `LANG` et `LC_ALL` dans `/root/.profile` pour que les sessions SSH utilisent les exécutables et la locale `fr_CH.UTF-8`, indépendamment de la locale annoncée par le client ; met à jour `/root/.pi/agent/settings.json` avec `tuiMode: "regular"`, en préservant les autres paramètres ;
 2. installe `billion-context` et Playwright dans le préfixe npm `/root/.local`, puis configure le plugin Pi de billion-context avec `bili plugin install pi` ;
 3. exécute `playwright install --with-deps chromium` pour installer Chromium et toutes les dépendances système nécessaires selon la procédure officielle de Playwright. Le navigateur est stocké dans `/root/.cache/ms-playwright` ;
 4. installe l’extension Pi `pi-hermes-memory` ;
